@@ -18,7 +18,9 @@
 class FirebaseSensorRtDbSend
 {
 public:
-	FirebaseSensorRtDbSend();//_codeCommunication deve ser >=1
+	FirebaseSensorRtDbSend();
+
+	void begin();
 
 	void addSensor(String name);
 	void updateValue(String name, float value);
