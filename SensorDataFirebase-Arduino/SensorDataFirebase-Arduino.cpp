@@ -1,17 +1,19 @@
 ///////////////////////////////////////////////////////////
-//  FirebaseSensorRtDbSend.cpp
-//  Implementation of the Class FirebaseSensorRtDbSend
+//  SensorDataFirebase-Arduino.cpp
+//  Implementation of the Class SensorDataFirebaseArduino
 //  Created on:      17-jan-2019 13:10:18
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
 #include "SensorDataFirebase-Arduino.h"
 
+//Setting Serial port to send data
 #define SerialToSend Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
-#define isSerial0    false	//set as true if SerialToSend = Serial (TX0). Otherwise set as false
+#define isSerial0    false	//if TX0/Serial set as true. Otherwise set as false
 
-FirebaseSensorRtDbSend::FirebaseSensorRtDbSend()
+SensorDataFirebaseArduino::SensorDataFirebaseArduino()
 {
+	//Initiate variables with default values
 	for (int i = 0; i < 30; i++){
 		names[i]=" ";
 	}
@@ -25,16 +27,18 @@ FirebaseSensorRtDbSend::FirebaseSensorRtDbSend()
 	}
 }
 
-void FirebaseSensorRtDbSend::begin(){
-	Serial.begin(9600);
+void SensorDataFirebaseArduino::begin(){
+	Serial.begin(115200);//Print with 115200 to avoid bugs when using Serial0(TX0) to send bytes
 
-	if (!isSerial0)
-		SerialToSend.begin(115200);
+	if (!isSerial0)//If is not using Serial0(TX0) to send bytes
+		SerialToSend.begin(115200);//Set communication to baudrate 115200
 
 }
 
-void FirebaseSensorRtDbSend::addSensor(String name){
-	for (int i = 0; i < 30; i++){//seach for empty index
+void SensorDataFirebaseArduino::addSensor(String name){
+	//---------- Add a new sensor to send data to the other device ----------//
+
+	for (int i = 1; i < 30; i++){//seach for empty index to add the new sensor name (the name index is used to send bytes)
 		if (names[i] == " "){
 			names[i] = name;
 			i = 30;
@@ -42,42 +46,47 @@ void FirebaseSensorRtDbSend::addSensor(String name){
 	}
 }
 
-void FirebaseSensorRtDbSend::updateValue(String name, float value){
+void SensorDataFirebaseArduino::updateValue(String name, float value){
+	//---------- Add the sensor value to the vector (the mean at the end of the cycle will be sent to the other device) ----------//
 	int indexSensor = 0;
-	for (int i = 0; i < 30; i++){
+	for (int i = 0; i < 30; i++){//Find the sensor number (name index) - this value is sent to the other device in the beginning
 		if (names[i] == name){
 			indexSensor = i;
 			i = 30;
 		}
 	}
 
-	for (int i = 0; i < 30; i++){
+	for (int i = 0; i < 30; i++){//Add the value to the end of the array (The mean of the values will be sent to the firebase each 30 minutes)(Up to 30 values)
 		if (values[indexSensor][i] == -1){
 			values[indexSensor][i] = value;
 			i = 30;
 		}
 	}
-	if (!isSerial0){
+
+	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
 		Serial.print("update("); Serial.print(name); Serial.print("): "); Serial.println(value);
 	}
-	
+
 }
 
-void FirebaseSensorRtDbSend::run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
+void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
+	//---------- Send bytes when necessary to the other decive ----------//
+	//Bytes about the time are sent to the other device
 
-	int actualCycle = (minute + hour * 60) / 30;// how int work: 15/30=0  29/30=0   30/30=1 
+	int actualCycle = (minute + hour * 60) / 30;//Calculate the actual cycle
 
-	//--- Send Hour ---//
+	//Send Hour
 	sendHour(hour, minute, second, dayOfWeek, day, month, year);
-	//--- Check cycle ---//
-	if (checkCycles[actualCycle]==false){//first time cycle 30minutes (just run one cicle once)
+
+	//Check cycle and executes if is a new cycle (each cycle has 30 minutes)(each cycle run just once)
+	if (checkCycles[actualCycle]==false){
 		checkCycles[actualCycle] = true;
 
-		//--- Clean Previous Cycle ---//
+		//Clean Previous Cycle
 		int lastCycle = actualCycle - 1;
 		lastCycle < 0 ? lastCycle += 48 : lastCycle;
 		checkCycles[lastCycle] = false;
-		//--- Send sensor values ---//
+		//Send sensor values
 		for (int i = 0; i < 30; i++){//for each sensor
 			if (names[i] != " "){
 				float sum=0;//sum of all values from that sensor in 30 minutes
@@ -89,34 +98,37 @@ void FirebaseSensorRtDbSend::run(int hour, int minute, int second, int dayOfWeek
 					}
 				}
 				float mean = sum / numbersSum;//calculate mean
-				sendValue(names[i], mean);//send value to Node
+				sendValue(names[i], mean);//send value to the other device
 			}
 			else{ i = 30; }
 		}
+
 		//reset sensor values after send values
 		for (int i = 0; i < 30; i++){
 			for (int j = 0; j < 30; j++){
 				values[i][j] = -1;
 			}
-		}	
+		}
 
-		//show message
-		if (!isSerial0){
+		if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
 			Serial.print("actualCycle: "); Serial.print(actualCycle); Serial.print(" - hour: ");
 			Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.println(second); Serial.println(" ");
 		}
 
 	}
 }
-//Send values to Node
-void FirebaseSensorRtDbSend::sendValue(String name, float value){
-	//float to 4 bytes (send)
+
+void SensorDataFirebaseArduino::sendValue(String name, float value){
+	//---------- Send sensor values to the other device ----------//
+
+	//Convert from float to 4 bytes
 	union u_tag {
 		byte b[4];
 		float fval;
 	} u;
 	u.fval = value;
-	//locate the sensor that the string refer to
+
+	//Locate the sensor that the String name refer to
 	int indexSensor=0;
 	int codeValue=0;
 	for (int i = 0; i < 30; i++){
@@ -126,10 +138,12 @@ void FirebaseSensorRtDbSend::sendValue(String name, float value){
 			i = 30;
 		}
 	}
-	//set the confirmation byte
+
+	//Set the confirmation byte
 	int confirmation = codeValue + u.b[0] + u.b[1] + u.b[2] + u.b[3];
 	while (confirmation>255)confirmation -= 255;
-	//send bytes
+
+	//Send bytes
 	SerialToSend.write(254);//initial byte
 	SerialToSend.write(253);//initial byte
 	SerialToSend.write(codeValue);//code
@@ -140,20 +154,23 @@ void FirebaseSensorRtDbSend::sendValue(String name, float value){
 	SerialToSend.write(u.b[3]);
 	SerialToSend.write(confirmation);
 
-	//show message
-	if (!isSerial0){
+	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
 		Serial.print("Send("); Serial.print(name); Serial.print(") - bytes:");
 		Serial.print(u.b[0]); Serial.print(" "); Serial.print(u.b[1]); Serial.print(" "); Serial.print(u.b[2]); Serial.print(" "); Serial.print(u.b[3]);
 		Serial.print(" - value:");
 		Serial.println(u.fval);
 	}
 }
-//Send hour to Node
-void FirebaseSensorRtDbSend::sendHour(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
-	//set the confirmation byte
+
+
+void SensorDataFirebaseArduino::sendHour(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
+	//---------- Send time to the other device ----------//
+
+	//Set the confirmation byte
 	int confirmation = hour + minute + second + dayOfWeek + day + month + (year - 2018);
 	while (confirmation>255)confirmation -= 255;
-	//send bytes
+
+	//Send bytes
 	SerialToSend.write(254);//initial byte
 	SerialToSend.write(253);//codeValue to time
 	SerialToSend.write(0);//codeValue to time
@@ -166,15 +183,13 @@ void FirebaseSensorRtDbSend::sendHour(int hour, int minute, int second, int dayO
 	SerialToSend.write(month);
 	SerialToSend.write(year - 2018);
 	SerialToSend.write(confirmation);
-	//show message
-	if (!isSerial0){
+
+	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
 	Serial.print("Send(time) - bytes:");
 	Serial.print(hour); Serial.print(" "); Serial.print(minute); Serial.print(" "); Serial.print(second); Serial.print(" "); Serial.print(dayOfWeek); Serial.print(" ");
 	Serial.print(day); Serial.print(" "); Serial.print(month); Serial.print(" "); Serial.print(year - 2018); Serial.print(" "); Serial.print(confirmation);
-	Serial.print(" - dados: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second); 
-	Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") "); 
+	Serial.print(" - dados: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second);
+	Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") ");
 	Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.println(year);
 	}
-	
 }
-
