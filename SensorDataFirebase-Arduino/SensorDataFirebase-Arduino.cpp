@@ -5,15 +5,13 @@
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
-#include "FirebaseSensorRtDbSend.h"
+#include "SensorDataFirebase-Arduino.h"
 
-
+#define SerialToSend Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
+#define isSerial0    false	//set as true if SerialToSend = Serial (TX0). Otherwise set as false
 
 FirebaseSensorRtDbSend::FirebaseSensorRtDbSend()
 {
-	Serial.begin(9600);
-	Serial1.begin(57600);
-
 	for (int i = 0; i < 30; i++){
 		names[i]=" ";
 	}
@@ -25,6 +23,14 @@ FirebaseSensorRtDbSend::FirebaseSensorRtDbSend()
 			values[i][j] = -1;
 		}
 	}
+}
+
+void FirebaseSensorRtDbSend::begin(){
+	Serial.begin(9600);
+
+	if (!isSerial0)
+		SerialToSend.begin(115200);
+
 }
 
 void FirebaseSensorRtDbSend::addSensor(String name){
@@ -51,7 +57,10 @@ void FirebaseSensorRtDbSend::updateValue(String name, float value){
 			i = 30;
 		}
 	}
-	Serial.print("update("); Serial.print(name); Serial.print("): "); Serial.println(value);
+	if (!isSerial0){
+		Serial.print("update("); Serial.print(name); Serial.print("): "); Serial.println(value);
+	}
+	
 }
 
 void FirebaseSensorRtDbSend::run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
@@ -92,8 +101,10 @@ void FirebaseSensorRtDbSend::run(int hour, int minute, int second, int dayOfWeek
 		}	
 
 		//show message
-		Serial.print("actualCycle: "); Serial.print(actualCycle); Serial.print(" - hour: "); 
-		Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.println(second); Serial.println(" ");
+		if (!isSerial0){
+			Serial.print("actualCycle: "); Serial.print(actualCycle); Serial.print(" - hour: ");
+			Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.println(second); Serial.println(" ");
+		}
 
 	}
 }
@@ -119,20 +130,23 @@ void FirebaseSensorRtDbSend::sendValue(String name, float value){
 	int confirmation = codeValue + u.b[0] + u.b[1] + u.b[2] + u.b[3];
 	while (confirmation>255)confirmation -= 255;
 	//send bytes
-	Serial1.write(254);//initial byte
-	Serial1.write(253);//initial byte
-	Serial1.write(codeValue);//code
-	Serial1.write(codeValue);//code
-	Serial1.write(u.b[0]);
-	Serial1.write(u.b[1]);
-	Serial1.write(u.b[2]);
-	Serial1.write(u.b[3]);
-	Serial1.write(confirmation);
+	SerialToSend.write(254);//initial byte
+	SerialToSend.write(253);//initial byte
+	SerialToSend.write(codeValue);//code
+	SerialToSend.write(codeValue);//code
+	SerialToSend.write(u.b[0]);
+	SerialToSend.write(u.b[1]);
+	SerialToSend.write(u.b[2]);
+	SerialToSend.write(u.b[3]);
+	SerialToSend.write(confirmation);
+
 	//show message
-	Serial.print("Send("); Serial.print(name); Serial.print(") - bytes:");	
-	Serial.print(u.b[3]); Serial.print(" "); Serial.print(u.b[2]); Serial.print(" "); Serial.print(u.b[1]); Serial.print(" "); Serial.print(u.b[0]); 
-	Serial.print(" - value:");
-	Serial.println(u.fval);
+	if (!isSerial0){
+		Serial.print("Send("); Serial.print(name); Serial.print(") - bytes:");
+		Serial.print(u.b[0]); Serial.print(" "); Serial.print(u.b[1]); Serial.print(" "); Serial.print(u.b[2]); Serial.print(" "); Serial.print(u.b[3]);
+		Serial.print(" - value:");
+		Serial.println(u.fval);
+	}
 }
 //Send hour to Node
 void FirebaseSensorRtDbSend::sendHour(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
@@ -140,25 +154,27 @@ void FirebaseSensorRtDbSend::sendHour(int hour, int minute, int second, int dayO
 	int confirmation = hour + minute + second + dayOfWeek + day + month + (year - 2018);
 	while (confirmation>255)confirmation -= 255;
 	//send bytes
-	Serial1.write(254);//initial byte
-	Serial1.write(253);//codeValue to time
-	Serial1.write(0);//codeValue to time
-	Serial1.write(0);//codeValue to time
-	Serial1.write(hour);//code
-	Serial1.write(minute);//code
-	Serial1.write(second);
-	Serial1.write(dayOfWeek);
-	Serial1.write(day);
-	Serial1.write(month);
-	Serial1.write(year-2018);
-	Serial1.write(confirmation);
+	SerialToSend.write(254);//initial byte
+	SerialToSend.write(253);//codeValue to time
+	SerialToSend.write(0);//codeValue to time
+	SerialToSend.write(0);//codeValue to time
+	SerialToSend.write(hour);//code
+	SerialToSend.write(minute);//code
+	SerialToSend.write(second);
+	SerialToSend.write(dayOfWeek);
+	SerialToSend.write(day);
+	SerialToSend.write(month);
+	SerialToSend.write(year - 2018);
+	SerialToSend.write(confirmation);
 	//show message
+	if (!isSerial0){
 	Serial.print("Send(time) - bytes:");
 	Serial.print(hour); Serial.print(" "); Serial.print(minute); Serial.print(" "); Serial.print(second); Serial.print(" "); Serial.print(dayOfWeek); Serial.print(" ");
 	Serial.print(day); Serial.print(" "); Serial.print(month); Serial.print(" "); Serial.print(year - 2018); Serial.print(" "); Serial.print(confirmation);
 	Serial.print(" - dados: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second); 
 	Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") "); 
 	Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.println(year);
+	}
 	
 }
 
