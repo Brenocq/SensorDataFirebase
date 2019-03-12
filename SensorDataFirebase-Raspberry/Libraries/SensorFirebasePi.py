@@ -88,6 +88,16 @@ class SensorFirebasePi:
 
     def updateFirebaseYear(self,name):
         print('update today')
+
+    def dayOfWeekZeller(self, day, month, year):
+        k = day
+        m = month + 10 #"March is 1, April is 2, and so on to February, which is 12"
+        m > 12 ? m -=12 : m;
+        D = year - 2000;#vai dar bug em 2100 
+        C = int(year / 100)
+        dayOfWeek = k + ((13 * m - 1) / 5) + D + (D / 4) + (C / 4) - 2 * C
+        return dayOfWeek >= 7 ? dayOfWeek = dayOfWeek % 7 : dayOfWeek
+
 '''
     _sensorNum = 0
     def __init__(self,linkFirebase):
