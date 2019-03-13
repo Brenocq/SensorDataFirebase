@@ -2,7 +2,7 @@ from firebase import firebase
 from Libraries.SensorFirebasePi import SensorFirebasePi
 import time
 
-sensorFirebase = SensorFirebasePi('https://escolaverde-portinari.firebaseio.com/')
+sensorFirebase = SensorFirebasePi('https:/your-link.firebaseio.com/')
 
 sensorFirebase.addSensor('temperature','Sensors/Temperature/')
 sensorFirebase.addSensor('humidity','Sensors/Humidity/')
