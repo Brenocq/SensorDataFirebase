@@ -5,6 +5,8 @@
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
+//TODO bug 165:165:85 (DoW:0) 165/165/2165 sending time
+
 #include "SensorDataFirebase-Arduino.h"
 
 //Setting Serial port to send data
@@ -28,10 +30,10 @@ SensorDataFirebaseArduino::SensorDataFirebaseArduino()
 }
 
 void SensorDataFirebaseArduino::begin(){
-	Serial.begin(115200);//Print with 115200 to avoid bugs when using Serial0(TX0) to send bytes
+	Serial.begin(9600);
 
 	if (!isSerial0)//If is not using Serial0(TX0) to send bytes
-		SerialToSend.begin(115200);//Set communication to baudrate 115200
+		SerialToSend.begin(9600);//Set communication to baudrate 9600
 
 }
 
@@ -64,7 +66,7 @@ void SensorDataFirebaseArduino::updateValue(String name, float value){
 	}
 
 	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-		Serial.print("update("); Serial.print(name); Serial.print("): "); Serial.println(value);
+		Serial.print("updating("); Serial.print(name); Serial.print("): "); Serial.println(value);
 	}
 
 }
@@ -78,6 +80,7 @@ void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfW
 	//Send Hour
 	sendHour(hour, minute, second, dayOfWeek, day, month, year);
 
+
 	//Check cycle and executes if is a new cycle (each cycle has 30 minutes)(each cycle run just once)
 	if (checkCycles[actualCycle]==false){
 		checkCycles[actualCycle] = true;
@@ -87,8 +90,9 @@ void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfW
 		lastCycle < 0 ? lastCycle += 48 : lastCycle;
 		checkCycles[lastCycle] = false;
 		//Send sensor values
-		for (int i = 0; i < 30; i++){//for each sensor
+		for (int i = 1; i < 30; i++){//for each sensor
 			if (names[i] != " "){
+
 				float sum=0;//sum of all values from that sensor in 30 minutes
 				float numbersSum=0;//value sum
 				for (int j = 0; j < 30; j++){//for each value
@@ -98,6 +102,7 @@ void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfW
 					}
 				}
 				float mean = sum / numbersSum;//calculate mean
+				Serial.println(mean);
 				sendValue(names[i], mean);//send value to the other device
 			}
 			else{ i = 30; }
@@ -134,7 +139,7 @@ void SensorDataFirebaseArduino::sendValue(String name, float value){
 	for (int i = 0; i < 30; i++){
 		if (names[i] == name){
 			indexSensor = i;
-			codeValue = i+1;
+			codeValue = i;
 			i = 30;
 		}
 	}
@@ -155,41 +160,43 @@ void SensorDataFirebaseArduino::sendValue(String name, float value){
 	SerialToSend.write(confirmation);
 
 	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-		Serial.print("Send("); Serial.print(name); Serial.print(") - bytes:");
+		Serial.print("Sending("); Serial.print(name); Serial.print(") - bytes: ");
 		Serial.print(u.b[0]); Serial.print(" "); Serial.print(u.b[1]); Serial.print(" "); Serial.print(u.b[2]); Serial.print(" "); Serial.print(u.b[3]);
-		Serial.print(" - value:");
+		Serial.print(" - value: ");
 		Serial.println(u.fval);
 	}
 }
 
 
 void SensorDataFirebaseArduino::sendHour(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
-	//---------- Send time to the other device ----------//
+		if(hour<24 && minute<60 && second<60){
+		//---------- Send time to the other device ----------//
 
-	//Set the confirmation byte
-	int confirmation = hour + minute + second + dayOfWeek + day + month + (year - 2018);
-	while (confirmation>255)confirmation -= 255;
+		//Set the confirmation byte
+		int confirmation = hour + minute + second + dayOfWeek + day + month + (year - 2018);
+		while (confirmation>255)confirmation -= 255;
 
-	//Send bytes
-	SerialToSend.write(254);//initial byte
-	SerialToSend.write(253);//codeValue to time
-	SerialToSend.write(0);//codeValue to time
-	SerialToSend.write(0);//codeValue to time
-	SerialToSend.write(hour);//code
-	SerialToSend.write(minute);//code
-	SerialToSend.write(second);
-	SerialToSend.write(dayOfWeek);
-	SerialToSend.write(day);
-	SerialToSend.write(month);
-	SerialToSend.write(year - 2018);
-	SerialToSend.write(confirmation);
+		//Send bytes
+		SerialToSend.write(254);//initial byte
+		SerialToSend.write(253);//codeValue to time
+		SerialToSend.write(0);//codeValue to time
+		SerialToSend.write(0);//codeValue to time
+		SerialToSend.write(hour);//code
+		SerialToSend.write(minute);//code
+		SerialToSend.write(second);
+		SerialToSend.write(dayOfWeek);
+		SerialToSend.write(day);
+		SerialToSend.write(month);
+		SerialToSend.write(year - 2018);
+		SerialToSend.write(confirmation);
 
-	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-	Serial.print("Send(time) - bytes:");
-	Serial.print(hour); Serial.print(" "); Serial.print(minute); Serial.print(" "); Serial.print(second); Serial.print(" "); Serial.print(dayOfWeek); Serial.print(" ");
-	Serial.print(day); Serial.print(" "); Serial.print(month); Serial.print(" "); Serial.print(year - 2018); Serial.print(" "); Serial.print(confirmation);
-	Serial.print(" - dados: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second);
-	Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") ");
-	Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.println(year);
+		if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
+		Serial.print("Sending(time) - bytes: ");
+		Serial.print(hour); Serial.print(" "); Serial.print(minute); Serial.print(" "); Serial.print(second); Serial.print(" "); Serial.print(dayOfWeek); Serial.print(" ");
+		Serial.print(day); Serial.print(" "); Serial.print(month); Serial.print(" "); Serial.print(year - 2018); Serial.print(" "); Serial.print(confirmation);
+		Serial.print(" - data: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second);
+		Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") ");
+		Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.println(year);
+		}
 	}
 }
