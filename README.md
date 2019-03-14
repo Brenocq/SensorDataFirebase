@@ -14,11 +14,23 @@ The data from sensors are organized in 5 ways in each subfolder: Today, Yesterda
 
 ![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
 
+<p align="center">
+  <img width="460" height="300" src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG">
+</p>
+
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG">
+</p>
+
 ### Today
 In this folder is stored all the data collected today by that sensor. The data in this the folder "Today" is stored every 30 minutes. For each cycle a new variable will be created on the folder "Today" to store the average of all readings performed by that sensor (only data sent to the Arduino libray).
 
+![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
+
 ### Yesterday
 Every 00h00 all data stored in Today is copied to the subfolder *"Yesterday"*. (The data in "Today" is deleted after copied)
+
+![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
 
 ### Week
 Every 00h00 a variable is created in the subfolder *"Week"*. This variable stores the mean of all data in *"Today"*.
