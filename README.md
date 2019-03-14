@@ -12,37 +12,48 @@ In the database is created two folders: *"Sensors"* and *"Time"*. In the first f
 
 The data from sensors are organized in 5 ways in each subfolder: Today, Yesterday, Week, Month, and Year.
 
-![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
-
-<p align="center">
-  <img width="460" height="300" src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG">
-</p>
-
 <p align="center">
   <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Time.PNG">
 </p>
 
 ### Today
 In this folder is stored all the data collected today by that sensor. The data in this the folder "Today" is stored every 30 minutes. For each cycle a new variable will be created on the folder "Today" to store the average of all readings performed by that sensor (only data sent to the Arduino libray).
 
-![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Today.PNG">
+</p>
 
 ### Yesterday
 Every 00h00 all data stored in Today is copied to the subfolder *"Yesterday"*. (The data in "Today" is deleted after copied)
 
-![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Yesterday.PNG">
+</p>
 
 ### Week
 Every 00h00 a variable is created in the subfolder *"Week"*. This variable stores the mean of all data in *"Today"*.
 The variable name can be: 
 *"1"* to Monday | *"2"* to Tuesday | *"3"* to Wednesday | *"4"* to Thursday | *"5"* to Friday | *"6"* to Saturday | *"7"* to Sunday
 
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Week.PNG">
+</p>
+
 ### Month
 Every 00h00 a variable is created in the subfolder *"Month"*. This variable stores the mean of all data in *"Today"*.
 The variable name is the number of the day.
 
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Month.PNG">
+</p>
+
 ### Year
 Every Monday 00h01 a variable is created in the subfolder *"Year"*. This variable stores the mean of all data in *"Week"*. The folder *"Week"* is deleted after this.
+
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Year.PNG">
+</p>
 
 # Hardware to use the libraries
 These libraries can work in two ways: the first one consists of using some **Arduino** and one **NodeMCU**; the second one consists of using some **Arduino** and one **Raspberry**.
