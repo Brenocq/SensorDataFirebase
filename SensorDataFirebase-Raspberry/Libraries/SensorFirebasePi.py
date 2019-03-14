@@ -24,7 +24,7 @@ class SensorFirebasePi:
         self.firebase = firebase.FirebaseApplication(self.link)
 
     def addSensor(self,name, address):
-        self.sensorsNum += 1;
+        self.sensorsNum += 1
         self.sensors[name]= {'address':address, 'number': self.sensorsNum}
         self.sensorsName.append(name)
 
@@ -195,7 +195,6 @@ class SensorFirebasePi:
 
         for i in range(48):
             if valuesToday[i] != None:
-                print(i)
                 print("SET firebase: %s = %f" % (dataBaseAddressYest+hoursStr[i],valuesToday[i]))
                 self.firebase.put(dataBaseAddressYest,hoursStr[i], valuesToday[i])
 
@@ -210,20 +209,177 @@ class SensorFirebasePi:
         print('#END#')
 #**********************************************************************************************************************MONTH
     def updateFirebaseMonth(self,name):
-        #TODO finish updateFirebaseMonth
-        print('update Month')
+        print('#MONTH#')
+        #----- delete month if day 1 -----#
+        if self.day == 1:
+            #create complete address to firebase
+            dataBaseAddressMonth = self.sensors[name]['address'] + "Month"
+            #print address screen
+            print('DELETE firebase: %s' % dataBaseAddressMonth)
+            #remove value firebase
+            self.firebase.delete(dataBaseAddressMonth, None)
+        #----- get values Today -----#
+        #each index refer to one hour
+        hoursStr = [ "00h00", "00h30", "01h00", "01h30", "02h00", "02h30", "03h00", "03h30", "04h00", "04h30",\
+        		"05h00", "05h30", "06h00", "06h30", "07h00", "07h30", "08h00", "08h30", "09h00", "09h30",\
+        		"10h00", "10h30", "11h00", "11h30", "12h00", "12h30", "13h00", "13h30", "14h00", "14h30",\
+        		"15h00", "15h30", "16h00", "16h30", "17h00", "17h30", "18h00", "18h30", "19h00", "19h30",\
+        		"20h00", "20h30", "21h00", "21h30", "22h00", "22h30", "23h00", "23h30" ]
+        valuesToday = []
+
+        for i in range(48):
+        	#get all values from Today (files hours[i] inside folder)
+            dataBaseAddress = self.sensors[name]['address'] + "Today/" + hoursStr[i]
+            valuesToday.append(self.firebase.get(dataBaseAddress,None))
+            #print valuesToday[i]
+            #valuesToday.append(self.firebase.get(dataBaseAddress,None))
+        	#print address screen
+            if valuesToday[i] != None:
+                print("GET firebase: %s : %f" % (dataBaseAddress,valuesToday[i]))
+            else:
+                print("GET firebase: %s : None" % (dataBaseAddress))
+
+        #----- calculate mean Today -----# (ignore all -1 values)
+        meanData = .0
+        totalSum = .0
+        for i in range(48):
+            if(valuesToday[i] != None):
+                meanData += valuesToday[i]
+                totalSum += 1
+
+        #----- update mean Month -----#
+        #create complete address to firebase
+        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/"
+        if valuesToday[i] != None:
+            print("SET firebase: %s = %f" % (dataBaseAddressMonth+self.day,meanData))
+            self.firebase.put(dataBaseAddressMonth,self.day, meanData)
+
+        #----- add value vector year -----#
+        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/"
+        if meanData != 0:
+            print("SET firebase: %s = %f" % (dataBaseAddressMonth + self.day,meanData))
+            self.firebase.put(dataBaseAddressMonth,self.day, meanData)
+
+        #----- update mean dayOfWeek -----#
+        print('#MONTH (WEEK)#')
+        dataBaseAddressWeek = self.sensors[name]['address'] + "Week/"
+        if meanData != 0:
+            print("SET firebase: %s = %f" % (dataBaseAddressWeek + self.dayOfWeek,meanData))
+            self.firebase.put(dataBaseAddressWeek,self.dayOfWeek, meanData)
+
+        print('#END#')
+        print('#END#')
 
 #**********************************************************************************************************************YEAR
     def updateFirebaseYear(self,name):
-        #TODO finish updateFirebaseMonth
-        print('update Year')
+        print('#YEAR#')
+    	#----- calculate week -----#
+    	weekNumberS
+
+    	#Reference: https://en.wikipedia.org/wiki/ISO_8601
+    	WW
+    	YYYY = self.year
+
+    	Monday = self.day - (self.day + 6) % 7                # Monday this week: may be negative down to 1-6 = -5
+    	MondayYear = 1 + (Monday + 6) % 7                     # First Monday of the year
+    	Monday01
+        if(MondayYear > 4):
+             Monday01 = MondayYear - 7                        # Monday of week 1: should lie between -2 and 4 inclusive
+    	WW = 1 + (Monday - Monday01) / 7                      # Nominal week ... but see below
+
+    	# In ISO-8601 there is no week 0 ... it will be week 52 or 53 of the previous year
+        if (WW == 0):
+            YYYY-=1
+            WW = 52
+            isLeap = false
+
+            if (self.year % 4 == 0):
+                if (self.year % 100 == 0 and self.year % 400 != 0):
+                    isLeap = false
+                else:
+                    isLeap = true
+
+            if (MondayYear == 3 or MondayYear == 4 or (isLeap and MondayYear == 2)):
+                WW = 53
+
+        isLeap = false
+
+    	if (self.year % 4 == 0):
+            if (self.year % 100 == 0 and self.year % 400 != 0):
+                isLeap = false
+            else:
+                isLeap = true
+
+    	# Similar issues at the end of the calendar year
+        if (WW == 53):
+            daysInYear
+            if(isLeap):
+                daysInYear=366
+            else:
+                daysInYear=365
+
+    		if (daysInYear - Monday < 3):
+    			YYYY+=1
+    			WW = 1
+
+    	#week number OK
+    	weekNumberS = WW
+
+        valuesToday.append(self.firebase.get(dataBaseAddress,None))
+        #print valuesToday[i]
+        #valuesToday.append(self.firebase.get(dataBaseAddress,None))
+        #print address screen
+        if valuesToday[i] != None:
+            print("GET firebase: %s : %f" % (dataBaseAddress,valuesToday[i]))
+        else:
+            print("GET firebase: %s : None" % (dataBaseAddress))
+    	#----- get week values -----#
+        valuesWeek = []
+        for i in range(7):
+            dataBaseAddress = self.sensors[name]['address'] + "Week/" + i
+            #get all values from Today (files hours[i] inside folder)
+            valuesWeek.append(self.firebase.get(dataBaseAddress,None))
+            #print address screen
+            if(valuesWeek[i] != None):
+                print("GET firebase: %s : %f" % (dataBaseAddress,valuesWeek[i]))
+            else:
+                print("GET firebase: %s : None" % (dataBaseAddress))
+
+    	#----- calculate mean Week -----# ignore all -1 (default)
+        meanData = .0
+    	totalSum = .0
+    	for i in range(7):
+    		if (valuesWeek[i] != None):
+    			meanData += valuesWeek[i]
+    			totalSum +=1
+
+    	meanData /= totalSum
+
+    	#----- update mean Year -----#
+    	#EX: 2019-month1-week2
+    	yearCode = str(self.year) + "-month" + str(self.month) + "-week" + str(self.weekNumberS)
+    	#create complete address to firebase
+    	dataBaseAddress = self.sensors[name]['address'] + "Years/" + yearCode
+    	#print address screen
+        print("SET firebase: %s = %f" % (dataBaseAddress + self.dayOfWeek, meanData))
+        #set value firebase
+        self.firebase.put(dataBaseAddress,None, meanData)
+
+    	#----- delete values Week -----#
+    	#create complete address to firebase
+    	dataBaseAddress = self.sensors[name]['address'] + "Week"
+    	#print address screen
+        print("DELETE firebase: %s" % (dataBaseAddress))
+    	#remove value firebase
+    	self.firebase.delete(dataBaseAddress, None)
+        print('#END#')
 
     def dayOfWeekZeller(self):
         k = self.day
         m = self.month + 10 #"March is 1, April is 2, and so on to February, which is 12"
         if m > 12:
             m -=12
-        D = self.year - 2000;#vai dar bug em 2100
+        D = self.year - 2000#vai dar bug em 2100
         C = int(self.year / 100)
         self.dayOfWeek = k + ((13 * m - 1) / 5) + D + (D / 4) + (C / 4) - 2 * C
         if self.dayOfWeek >= 7:
