@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////
-//  FirebaseSensorRtDbReceive.h
-//  Implementation of the Class FirebaseSensorRtDbReceive
+//  SensorDataFirebase-NodeMCU.h
+//  Implementation of the Class SensorDataFirebaseNodeMCU
 //  Created on:      17-jan-2019 13:10:18
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
-#if !defined(FirebaseSensorRtDbReceive_H)
-#define FirebaseSensorRtDbReceive_H
+#if !defined(SensorDataFirebaseNodeMCU_H)
+#define SensorDataFirebaseNodeMCU_H
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -13,10 +13,10 @@
 #include "WProgram.h"
 #endif
 
-class FirebaseSensorRtDbReceive
+class SensorDataFirebaseNodeMCU
 {
 public:
-	FirebaseSensorRtDbReceive();
+	SensorDataFirebaseNodeMCU();
 
 	void begin();
 
@@ -37,4 +37,4 @@ private:
 
 	int hour, minute, second, dayOfWeek, day, month, year;
 };
-#endif // !defined(FirebaseSensorRtDbReceive_H)
+#endif // !defined(SensorDataFirebaseNodeMCU_H)

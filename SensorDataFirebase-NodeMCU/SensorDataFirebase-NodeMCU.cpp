@@ -1,24 +1,28 @@
 ///////////////////////////////////////////////////////////
-//  FirebaseSensorRtDbReceive.cpp
-//  Implementation of the Class FirebaseSensorRtDbReceive
+//  SensorDataFirebase-NodeMCU.cpp
+//  Implementation of the Class SensorDataFirebaseNodeMCU
 //  Created on:      17-jan-2019 18:24:56
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
-#include "FirebaseSensorRtDbReceive.h"
+#include "SensorDataFirebaseNodeMCU.h"
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 #include <time.h>
 
+//Setting Serial port to send data
+#define SerialToSend Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
+#define isSerial0    false	//if TX0/Serial set as true. Otherwise set as false
+
 //edit info below
 #define FIREBASE_HOST "firebase link"
-#define FIREBASE_AUTH "autCode"
+#define FIREBASE_AUTH "authCode"
 #define WIFI_SSID "Name"
 #define WIFI_PASSWORD "WifiPassword"
 
 #define PRINTALL false
 
-FirebaseSensorRtDbReceive::FirebaseSensorRtDbReceive()
+SensorDataFirebaseNodeMCU::SensorDataFirebaseNodeMCU()
 {
 	for (int i = 0; i < 30; i++){
 		names[i] = " ";
@@ -37,7 +41,7 @@ FirebaseSensorRtDbReceive::FirebaseSensorRtDbReceive()
 	}
 }
 
-void FirebaseSensorRtDbReceive::begin(){
+void SensorDataFirebaseNodeMCU::begin(){
 	// connect to wifi.
 	Serial.begin(57600);
 
@@ -54,7 +58,7 @@ void FirebaseSensorRtDbReceive::begin(){
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 }
 
-void FirebaseSensorRtDbReceive::addSensor(String name, String address){
+void SensorDataFirebaseNodeMCU::addSensor(String name, String address){
 	for (int i = 0; i < 30; i++){//seach for empty index
 		if (names[i] == " "){
 			names[i] = name;
@@ -64,14 +68,14 @@ void FirebaseSensorRtDbReceive::addSensor(String name, String address){
 	}
 }
 
-void FirebaseSensorRtDbReceive::run(){
+void SensorDataFirebaseNodeMCU::run(){
 	if (PRINTALL)
 		Serial.println("//--------------------------- RUN RECEIVE ---------------------------//");
 	if (Serial.available() >= 1) {//Is there data on the serial port?
 		int byte1 = Serial.read();
-		if (byte1==254){//first byte equal 254 
+		if (byte1==254){//first byte equal 254
 			int byte2 = Serial.read();
-			if (byte2 == 253){//second byte equal 253 
+			if (byte2 == 253){//second byte equal 253
 				//read bytes
 				int	code1 = Serial.read();
 				int	code2 = Serial.read();
@@ -90,7 +94,7 @@ void FirebaseSensorRtDbReceive::run(){
 						_year = Serial.read() + 2018;
 
 						int	confirmation = Serial.read();//sum of all numbers (I will assume that its OK now)(need to change later)(talk with Breno Queiroz)
-						
+
 						//!!!!NO PROTECTION!!!!
 						hour = _hour;
 						minute = _minute;
@@ -105,7 +109,7 @@ void FirebaseSensorRtDbReceive::run(){
 						float k = day;
 						float m = month + 10; //"March is 1, April is 2, and so on to February, which is 12"
 						m > 12 ? m -=12 : m;
-						float D = year - 2000;//vai dar bug em 2100 
+						float D = year - 2000;//vai dar bug em 2100
 						float C = int(year / 100);
 
 						dayOfWeek = k + ((13 * m - 1) / 5) + D + (D / 4) + (C / 4) - 2 * C;
@@ -199,10 +203,10 @@ void FirebaseSensorRtDbReceive::run(){
 
 //**********************************************************************************************************************TODAY
 //**********************************************************************************************************************TODAY
-void FirebaseSensorRtDbReceive::updateFirebaseToday(int index, float value ){
+void SensorDataFirebaseNodeMCU::updateFirebaseToday(int index, float value ){
 	Serial.println("//-----TODAY-----//");
 	int indexHour = (hour * 2) + (minute / 30);
-	
+
 	//each index refer to one hour
 	String hours[48] = { "00h00", "00h30", "01h00", "01h30", "02h00", "02h30", "03h00", "03h30", "04h00", "04h30",
 						"05h00", "05h30", "06h00", "06h30", "07h00", "07h30", "08h00", "08h30", "09h00", "09h30",
@@ -227,7 +231,7 @@ void FirebaseSensorRtDbReceive::updateFirebaseToday(int index, float value ){
 }
 //**********************************************************************************************************************YESTERDAY
 //**********************************************************************************************************************YESTERDAY
-void FirebaseSensorRtDbReceive::updateFirebaseYesterday(int index){
+void SensorDataFirebaseNodeMCU::updateFirebaseYesterday(int index){
 Serial.println("//-----YESTERDAY-----//");
 	//----- get values Today -----//
 	//each index refer to one hour
@@ -295,11 +299,11 @@ Serial.println("//-----YESTERDAY-----//");
 }
 //**********************************************************************************************************************MONTH
 //**********************************************************************************************************************MONTH
-void FirebaseSensorRtDbReceive::updateFirebaseMonth(int index){
+void SensorDataFirebaseNodeMCU::updateFirebaseMonth(int index){
 	Serial.println("//-----MONTH-----//");
 	//----- delete month if day 1 -----//
 	if (day == 1)
-	{	
+	{
 		//create complete address to firebase
 		String dataBaseAddress = addresses[index] + "Month";
 		//print address screen
@@ -357,7 +361,7 @@ void FirebaseSensorRtDbReceive::updateFirebaseMonth(int index){
 	for (int i = 0; i < 48; i++){
 		valuesToday[index][i] = -1;
 	}
-	Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum); 
+	Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum);
 	mean /= totalSum;
 	Serial.print(")="); Serial.println(mean);
 	//----- update mean Month -----//
@@ -385,7 +389,7 @@ void FirebaseSensorRtDbReceive::updateFirebaseMonth(int index){
 }
 //**********************************************************************************************************************YEAR
 //**********************************************************************************************************************YEAR
-void FirebaseSensorRtDbReceive::updateFirebaseYear(int index){
+void SensorDataFirebaseNodeMCU::updateFirebaseYear(int index){
 	Serial.println("//-----YEAR-----//");
 	//----- calculate week -----//
 	String weekNumberS;
