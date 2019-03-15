@@ -5,6 +5,8 @@
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
+//TODO bug 165:165:85 (DoW:0) 165/165/2165 sending time
+
 #include "SensorDataFirebase-Arduino.h"
 
 //Setting Serial port to send data
@@ -69,7 +71,7 @@ void SensorDataFirebaseArduino::updateValue(String name, float value){
 
 }
 
-void SensorDataFirebaseArduino::run(int hour, int minute, int second, int day, int month, int year){
+void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
 	//---------- Send bytes when necessary to the other decive ----------//
 	//Bytes about the time are sent to the other device
 
