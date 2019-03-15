@@ -27,7 +27,7 @@ public:
 	void addSensor(String name);//to add sensors to send data to the other device
 	void updateValue(String name, float value);//update data from one sensor (can update up to 30 time in 30 minutes)
 
-	void run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year);//RUN the library (use after update each sensor)
+	void run(int hour, int minute, int second, int day, int month, int year);//RUN the library (use after update each sensor)
 private:
 	void sendHour(int hour, int minute, int second, int dayOfWeek, int day, int month, int year);//send hour to the other device
 	void sendValue(String name, float value);//send sensor values to the other device
