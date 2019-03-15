@@ -64,12 +64,63 @@ To the library works the Arduino must be connected to some module that returns t
 This information about the time is used to send all data in the right time to the other device. Information about the time is sent every minute and data about the sensors are sent every 30 minutes.
 
 ### Arduino <-> NodeMCU
-The communication between the Arduino and the NodeMCU is made through Serial. This communication occurs using 9600 or baudrate and Serial1 in both by default, but these values can be changed in the *.cpp* file.
+The communication between the Arduino and the NodeMCU is made through Serial. This communication occurs using 9600 or baudrate and Serial1 in both by default. (these values can be changed in the *.cpp* file).
+The Node TX can be connected directily on the Arduino RX, but the voltage from the Arduino TX to the Node RX **must** be reduced. I am using one 1k resistor and one 2k2 resistor to lower the signal. 
+ 
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection.PNG">
+</p>
+
+Also, the Arduino must be connected to some 
 
 ### Arduino <-> Raspberry
 The communication between the Arduino and the Raspberry is made through Serial too. This communication occurs by default using 9600 of baudrate, Serial1 for the Arduino and ttyAMA0 for the Raspberry. These values can be changed in the *.cpp* file for the Arduino and in the *SensorFirebasePi.py* for the Raspberry.
 
 # Using the Arduino library
+After creating the object from the class SensorDataFirebaseArduino there are 3 main commands.
+`.addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.
+`.updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.
+`run(int hour, int minute, int second, int day, int month, int year)` - This command should be runned each minute. Data about the time will be sent to the other device each time and sensors data will be sent every 30 minutes.
+
+
+```c++
+#include "SensorDataFirebase-Arduino.h"
+#include "Clock.h" // Use some library for your RTC clock device
+
+SensorDataFirebaseArduino sensorData;
+
+void setup() {
+  sensorData.begin();
+  sensorData.addSensor("temperature");//(String name, int codeCommunication)
+}
+
+int lastMinute;
+
+void loop() {
+    int hour,minute,second;
+
+   rtclock.updateTime();
+   minute = rtclock.getMinute();
+   
+  if (minute != lastMinute) {
+    lastminute      = minute;
+    int sensorValue = analogRead(A0);
+    
+    sensorSend.updateValue("temperatura", sensorValue);//add new data to the temperature sensor
+    
+    sensorSend.run( rtclock.getHour(), minute, rtclock.getSecond(), rtclock.getDayOfWeek(),
+                    rtclock.getDay(), rtclock.getMonth(), rtclock.getYear());
+  }
+  delay(5);
+}
+```
+
+To change the Serial port that will communicate with the other device go to _SensorDataFirebase-Arduino.cpp_ and change the lines 11 and 12.
+
+```c++
+11 #define SerialToSend Serial1
+12 #define isSerial0    false
+```
 
 # Using the NodeMCU library
 
