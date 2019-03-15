@@ -68,7 +68,7 @@ The communication between the Arduino and the NodeMCU is made through Serial. Th
 The Node TX can be connected directily on the Arduino RX, but the voltage from the Arduino TX to the Node RX **must** be reduced. I am using one 1k resistor and one 2k2 resistor to lower the signal. 
  
 <p align="center">
-  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection.png">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection-hq.png">
 </p>
 
 Do not forget to use some clock device.
@@ -85,6 +85,7 @@ After creating the object from the class SensorDataFirebaseArduino there are 3 m
 
 
 ```c++
+/*ARDUINO CODE*/
 #include "SensorDataFirebase-Arduino.h"
 #include "Clock.h" // Use some library for your RTC clock device
 
@@ -107,9 +108,9 @@ void loop() {
     lastminute      = minute;
     int sensorValue = analogRead(A0);
     
-    sensorSend.updateValue("temperatura", sensorValue);//add new data to the temperature sensor
+    sensorData.updateValue("temperatura", sensorValue);//add new data to the temperature sensor
     
-    sensorSend.run( rtclock.getHour(), minute, rtclock.getSecond(), rtclock.getDayOfWeek(),
+    sensorData.run( rtclock.getHour(), minute, rtclock.getSecond(), rtclock.getDayOfWeek(),
                     rtclock.getDay(), rtclock.getMonth(), rtclock.getYear());
   }
   delay(5);
@@ -125,6 +126,51 @@ To change the Serial port that will communicate with the other device go to _Sen
 
 # Using the NodeMCU library
 Copy the _SensorDataFirebase-NodeMCU folder to your _Documents/Arduino/Library_ folder.
+After creating the object from the class SensorDataFirebaseNodeMCU there are 2 main commands.<br/>
+`.addSensor(String name, String address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/>
+`run()` - This command can be runned as much as you can. Every time this runs the data on the Serial port is checked and sent to the Firebase RealTimeDatabase.<br/>
+
+To change the Serial port that will communicate with the other device go to _SensorDataFirebase-NodeMCU.cpp_ and change the lines 14 and 15.
+```c++
+14 #define SerialToSend Serial1
+15 #define isSerial0    false
+```
+You must change the lines 18-21 to connect the NodeMCU to your wifi and set your Firebase project.
+```c++
+18 #define FIREBASE_HOST "firebase link"
+19 #define FIREBASE_AUTH "authCode"
+20 #define WIFI_SSID "Name"
+21 #define WIFI_PASSWORD "WifiPassword"
+```
+Also, you should to open your Firebase database to allow the NodeMCU to write and read data. Go to your Firebase project on the Firebase website and access your RealtimeDatabase. Go to the "rules" window and change read and write to true. Will look like this:
+```c++
+{
+  /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+Nice, now you should be able to use the library properly. The example code is:
+
+```c++
+/*ARDUINO CODE*/
+#include "SensorDataFirebase-NodeMCU.h"
+
+SensorDataFirebaseNodeMCU sensorData;
+
+void setup() {
+  sensorData.begin();
+  sensorData.addSensor("temperatura","Sensors/Temperature/");
+}
+
+void loop() {
+  sensorData.run();
+  delay(5);
+}
+```
 
 # Using the Raspberry library
 
