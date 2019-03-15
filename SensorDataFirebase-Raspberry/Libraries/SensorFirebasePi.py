@@ -7,10 +7,10 @@ ser = serial.Serial("/dev/ttyAMA0",9600,timeout=1)
 
 class SensorFirebasePi:
 
-    sensors    = {}
+    sensors = {}
     sensorsName = ["None"]
     sensorsNum = 0
-    hour = 0
+    hour  = 0
     minute = 0
     second = 0
     dayOfWeek = 0
@@ -211,7 +211,7 @@ class SensorFirebasePi:
     def updateFirebaseMonth(self,name):
         print('#MONTH#')
         #----- delete month if day 1 -----#
-        if self.day == 1:
+        if(self.day == 1):
             #create complete address to firebase
             dataBaseAddressMonth = self.sensors[name]['address'] + "Month"
             #print address screen
@@ -225,6 +225,7 @@ class SensorFirebasePi:
         		"10h00", "10h30", "11h00", "11h30", "12h00", "12h30", "13h00", "13h30", "14h00", "14h30",\
         		"15h00", "15h30", "16h00", "16h30", "17h00", "17h30", "18h00", "18h30", "19h00", "19h30",\
         		"20h00", "20h30", "21h00", "21h30", "22h00", "22h30", "23h00", "23h30" ]
+
         valuesToday = []
 
         for i in range(48):
@@ -249,25 +250,19 @@ class SensorFirebasePi:
 
         #----- update mean Month -----#
         #create complete address to firebase
-        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/"
-        if valuesToday[i] != None:
-            print("SET firebase: %s = %f" % (dataBaseAddressMonth+self.day,meanData))
-            self.firebase.put(dataBaseAddressMonth,self.day, meanData)
-
-        #----- add value vector year -----#
-        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/"
-        if meanData != 0:
-            print("SET firebase: %s = %f" % (dataBaseAddressMonth + self.day,meanData))
-            self.firebase.put(dataBaseAddressMonth,self.day, meanData)
+        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/" + self.day
+        if(valuesToday[i] != None):
+            print("SET firebase: %s = %f" % (dataBaseAddressMonth,meanData))
+            self.firebase.put(dataBaseAddressMonth, None, meanData)
 
         #----- update mean dayOfWeek -----#
         print('#MONTH (WEEK)#')
-        dataBaseAddressWeek = self.sensors[name]['address'] + "Week/"
-        if meanData != 0:
-            print("SET firebase: %s = %f" % (dataBaseAddressWeek + self.dayOfWeek,meanData))
-            self.firebase.put(dataBaseAddressWeek,self.dayOfWeek, meanData)
-
+        dataBaseAddressWeek = self.sensors[name]['address'] + "Week/" + self.dayOfWeek
+        if(meanData != 0):
+            print("SET firebase: %s = %f" % (dataBaseAddressWeek,meanData))
+            self.firebase.put(dataBaseAddressWeek, None, meanData)
         print('#END#')
+
         print('#END#')
 
 #**********************************************************************************************************************YEAR
@@ -325,14 +320,6 @@ class SensorFirebasePi:
     	#week number OK
     	weekNumberS = WW
 
-        valuesToday.append(self.firebase.get(dataBaseAddress,None))
-        #print valuesToday[i]
-        #valuesToday.append(self.firebase.get(dataBaseAddress,None))
-        #print address screen
-        if valuesToday[i] != None:
-            print("GET firebase: %s : %f" % (dataBaseAddress,valuesToday[i]))
-        else:
-            print("GET firebase: %s : None" % (dataBaseAddress))
     	#----- get week values -----#
         valuesWeek = []
         for i in range(7):
@@ -361,7 +348,7 @@ class SensorFirebasePi:
     	#create complete address to firebase
     	dataBaseAddress = self.sensors[name]['address'] + "Years/" + yearCode
     	#print address screen
-        print("SET firebase: %s = %f" % (dataBaseAddress + self.dayOfWeek, meanData))
+        print("SET firebase: %s = %f" % (dataBaseAddress, meanData))
         #set value firebase
         self.firebase.put(dataBaseAddress,None, meanData)
 
