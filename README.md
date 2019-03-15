@@ -33,7 +33,7 @@ Every 00h00 all data stored in Today is copied to the subfolder *"Yesterday"*. (
 
 ### Week
 Every 00h00 a variable is created in the subfolder *"Week"*. This variable stores the mean of all data in *"Today"*.
-The variable name can be: 
+The variable name can be: <br/>
 *"1"* to Monday | *"2"* to Tuesday | *"3"* to Wednesday | *"4"* to Thursday | *"5"* to Friday | *"6"* to Saturday | *"7"* to Sunday
 
 <p align="center">
@@ -56,30 +56,31 @@ Every Monday 00h01 a variable is created in the subfolder *"Year"*. This variabl
 </p>
 
 # Hardware to use the libraries
-These libraries can work in two ways: the first one consists of using some **Arduino** and one **NodeMCU**; the second one consists of using some **Arduino** and one **Raspberry**.
+These libraries can work in two ways: the first one consists of using some **Arduino** and one **NodeMCU**; the second one consists of using some **Arduino** and one **Raspberry**.<br/>
 In both systems the Arduino is connected to sensors and send the data to the other device. When the other device receive the bytes, it add the data to the Firebase Database and organize all the data.
 
 ### Arduino
-To the library works the Arduino must be connected to some module that returns the time (I am using the **DS1307 I2C RTC Module**).
+To the library works the Arduino must be connected to some module that returns the time (I am using the **DS1307 I2C RTC Module**).<br/>
 This information about the time is used to send all data in the right time to the other device. Information about the time is sent every minute and data about the sensors are sent every 30 minutes.
 
 ### Arduino <-> NodeMCU
-The communication between the Arduino and the NodeMCU is made through Serial. This communication occurs using 9600 or baudrate and Serial1 in both by default. (these values can be changed in the *.cpp* file).
+The communication between the Arduino and the NodeMCU is made through Serial. This communication occurs using 9600 or baudrate and Serial1 in both by default. (these values can be changed in the *.cpp* file).<br/>
 The Node TX can be connected directily on the Arduino RX, but the voltage from the Arduino TX to the Node RX **must** be reduced. I am using one 1k resistor and one 2k2 resistor to lower the signal. 
  
 <p align="center">
-  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection.PNG">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection.png">
 </p>
 
-Also, the Arduino must be connected to some 
+Do not forget to use some clock device.
 
 ### Arduino <-> Raspberry
 The communication between the Arduino and the Raspberry is made through Serial too. This communication occurs by default using 9600 of baudrate, Serial1 for the Arduino and ttyAMA0 for the Raspberry. These values can be changed in the *.cpp* file for the Arduino and in the *SensorFirebasePi.py* for the Raspberry.
 
 # Using the Arduino library
-After creating the object from the class SensorDataFirebaseArduino there are 3 main commands.
-`.addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.
-`.updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.
+Copy the _SensorDataFirebase-Arduino_ folder to your _Documents/Arduino/Library_ folder.<br/>
+After creating the object from the class SensorDataFirebaseArduino there are 3 main commands.<br/>
+`.addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.<br/>
+`.updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.<br/>
 `run(int hour, int minute, int second, int day, int month, int year)` - This command should be runned each minute. Data about the time will be sent to the other device each time and sensors data will be sent every 30 minutes.
 
 
@@ -123,6 +124,7 @@ To change the Serial port that will communicate with the other device go to _Sen
 ```
 
 # Using the NodeMCU library
+Copy the _SensorDataFirebase-NodeMCU folder to your _Documents/Arduino/Library_ folder.
 
 # Using the Raspberry library
 
