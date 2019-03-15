@@ -12,6 +12,8 @@ In the database is created two folders: *"Sensors"* and *"Time"*. In the first f
 
 The data from sensors are organized in 5 ways in each subfolder: Today, Yesterday, Week, Month, and Year.
 
+![alt text](https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Firebase-Sensors.PNG)
+
 ### Today
 In this folder is stored all the data collected today by that sensor. The data in this the folder "Today" is stored every 30 minutes. For each cycle a new variable will be created on the folder "Today" to store the average of all readings performed by that sensor (only data sent to the Arduino libray).
 
