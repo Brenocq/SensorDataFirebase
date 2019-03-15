@@ -5,8 +5,6 @@
 //  Original author: Breno Queiroz
 ///////////////////////////////////////////////////////////
 
-//TODO bug 165:165:85 (DoW:0) 165/165/2165 sending time
-
 #include "SensorDataFirebase-Arduino.h"
 
 //Setting Serial port to send data
