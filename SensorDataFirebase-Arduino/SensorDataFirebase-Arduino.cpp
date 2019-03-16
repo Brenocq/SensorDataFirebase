@@ -64,7 +64,7 @@ void SensorDataFirebaseArduino::updateValue(String name, float value){
 	}
 
 	if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-		Serial.print("updating("); Serial.print(name); Serial.print("): "); Serial.println(value);
+		Serial.print("Updating("); Serial.print(name); Serial.print("): "); Serial.println(value);
 	}
 
 }
@@ -112,12 +112,6 @@ void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfW
 				values[i][j] = -1;
 			}
 		}
-
-		if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-			Serial.print("actualCycle: "); Serial.print(actualCycle); Serial.print(" - hour: ");
-			Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.println(second); Serial.println(" ");
-		}
-
 	}
 }
 
@@ -189,12 +183,9 @@ void SensorDataFirebaseArduino::sendHour(int hour, int minute, int second, int d
 		SerialToSend.write(confirmation);
 
 		if (!isSerial0){//Print only when not using Serial0/T0 to send bytes to the other device
-		Serial.print("Sending(time) - bytes: ");
-		Serial.print(hour); Serial.print(" "); Serial.print(minute); Serial.print(" "); Serial.print(second); Serial.print(" "); Serial.print(dayOfWeek); Serial.print(" ");
-		Serial.print(day); Serial.print(" "); Serial.print(month); Serial.print(" "); Serial.print(year - 2018); Serial.print(" "); Serial.print(confirmation);
-		Serial.print(" - data: "); Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second);
-		Serial.print(" (DoW:"); Serial.print(dayOfWeek); Serial.print(") ");
-		Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.println(year);
+		Serial.print("Sending(time) - data: ");
+		Serial.print(hour); Serial.print(":"); Serial.print(minute); Serial.print(":"); Serial.print(second); Serial.print(" (Dow:"); Serial.print(dayOfWeek); Serial.print(") ");
+		Serial.print(day); Serial.print("/"); Serial.print(month); Serial.print("/"); Serial.print(year - 2018);
 		}
 	}
 }
