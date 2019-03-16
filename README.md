@@ -205,41 +205,52 @@ This library was made to show everything it is doing to the user. Everytime the 
   <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Library-Printing.PNG">
 </p>
 
-### Sending Bytes
+#### Sending Bytes
+There are two types of data to send. Data about sensors and data about the time.<br/><br/>
+When sending data about a sensor, this is shown:<br/>
+Sending(_sensor name_) - bytes: _b1_ _b2_ _b3_ _b4_ - value: _float value_<br/>
+`Sending(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/><br/>
 
-### Receiving Bytes
+When sending data about time, this is shown:<br/>
+Sending(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
+`Sending(time) - data: 22:1:0 (DoW:5) 15/3/2019`
+
+#### Receiving Bytes
 There are two types of data to be received. Data about sensors and data about the time.<br/><br/>
 When receiving data about a sensor, this is shown:<br/>
 Receiving(_sensor name_) - bytes: _b1_ _b2_ _b3_ _b4_ - value: _float value_<br/>
-'Receiving(temperature) - bytes: 16 17 227 65 - value: 28.383331'<br/><br/>
+`Receiving(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/><br/>
 
 When receiving data about time, this is shown:<br/>
 Receiving(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
-'Receiving(time) - data: 22:1:0 (DoW:5) 15/3/2019'
+`Receiving(time) - data: 22:1:0 (DoW:5) 15/3/2019`
 
-### Setting Firebase value
+#### Update indicator
+The library also print when some sensor data is being updated.<br/>
+Updating(_sensor name_): _float value_<br/>
+`Updating(temperature): 28.383331`
+
+#### Setting Firebase value
 When adding or changing some value on Firebase, this is shown:<br/>
 SET firebase: _address_ = _value_<br/>
-'SET firebase: Time/CurrentTime = 22:04:00'<br/>
-'SET firebase: Sensors/Temperature/Today/00h00 = 28.383331'
+`SET firebase: Time/CurrentTime = 22:04:00`<br/>
+`SET firebase: Sensors/Temperature/Today/00h00 = 28.383331`
 
-### Reading Firebase value
+#### Reading Firebase value
 When reading some value on Firebase, this is shown:<br/>
 GET firebase: _address_:  _value_<br/>
-'GET firebase: Sensors/Temperature/Today/00h00: 28.383331'
-### Deleting Firebase folder
+`GET firebase: Sensors/Temperature/Today/00h00: 28.383331`
+#### Deleting Firebase folder
 When deleting some value on Firebase, this is shown:<br/>
 DELETE firebase: _address_<br/>
-'DELETE firebase: Sensors/Temperature/Yesterday/'
-### Cycle indicator
+`DELETE firebase: Sensors/Temperature/Yesterday/`
+#### Cycle indicator
 The library indicates the actual cycle (period of 30 minutes).<br/>
-'#--------------- CYCLE 21h30 ---------------#'<br/>
+`#--------------- CYCLE 21h30 ---------------#`<br/>
 Also, it indicates the start and end of some change. For example, if the library is changing information about the sensor _temperature_, it prints that this is ocurring.<br/>
-'#----- Sensor temperature -----#'<br/>
-'#TODAY#'<br/>
+`#----- Sensor temperature -----#`<br/>
+`#TODAY#`<br/>
 (The changes that are being made appear here)
-'#END#'<br/>
-
-
+`#END#`<br/>
 
 Any doubt, error, or sugestion, please let me know.
