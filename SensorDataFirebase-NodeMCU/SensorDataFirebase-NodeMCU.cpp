@@ -11,7 +11,7 @@
 #include <time.h>
 
 //Setting Serial port to send data
-#define SerialToRead Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
+#define SerialToRead Serial2 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
 #define isSerial0    false	//if TX0/Serial set as true. Otherwise set as false
 
 //edit info below
