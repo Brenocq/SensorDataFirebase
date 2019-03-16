@@ -68,7 +68,7 @@ The communication between the Arduino and the NodeMCU is made through Serial. Th
 The Node TX can be connected directily on the Arduino RX, but the voltage from the Arduino TX to the Node RX **must** be reduced. I am using one 1k resistor and one 2k2 resistor to lower the signal. 
  
 <p align="center">
-  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection-hq.png">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection-hq.png" width="700" height="360">
 </p>
 
 Do not forget to use some clock device.
@@ -79,8 +79,8 @@ The communication between the Arduino and the Raspberry is made through Serial t
 # Using the Arduino library
 Copy the _SensorDataFirebase-Arduino_ folder to your _Documents/Arduino/Library_ folder.<br/>
 After creating the object from the class SensorDataFirebaseArduino there are 3 main commands.<br/>
-`.addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.<br/>
-`.updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.<br/>
+`addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.<br/>
+`updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.<br/>
 `run(int hour, int minute, int second, int day, int month, int year)` - This command should be runned each minute. Data about the time will be sent to the other device each time and sensors data will be sent every 30 minutes.
 
 
@@ -120,27 +120,27 @@ void loop() {
 To change the Serial port that will communicate with the other device go to _SensorDataFirebase-Arduino.cpp_ and change the lines 11 and 12.
 
 ```c++
-11 #define SerialToSend Serial1
-12 #define isSerial0    false
+#define SerialToSend Serial1
+#define isSerial0    false
 ```
 
 # Using the NodeMCU library
 Copy the _SensorDataFirebase-NodeMCU folder to your _Documents/Arduino/Library_ folder.
 After creating the object from the class SensorDataFirebaseNodeMCU there are 2 main commands.<br/>
-`.addSensor(String name, String address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/>
+`addSensor(String name, String address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/>
 `run()` - This command can be runned as much as you can. Every time this runs the data on the Serial port is checked and sent to the Firebase RealTimeDatabase.<br/>
 
 To change the Serial port that will communicate with the other device go to _SensorDataFirebase-NodeMCU.cpp_ and change the lines 14 and 15.
 ```c++
-14 #define SerialToSend Serial1
-15 #define isSerial0    false
+#define SerialToSend Serial1
+#define isSerial0    false
 ```
 You must change the lines 18-21 to connect the NodeMCU to your wifi and set your Firebase project.
 ```c++
-18 #define FIREBASE_HOST "firebase link"
-19 #define FIREBASE_AUTH "authCode"
-20 #define WIFI_SSID "Name"
-21 #define WIFI_PASSWORD "WifiPassword"
+#define FIREBASE_HOST "firebase link"
+#define FIREBASE_AUTH "authCode"
+#define WIFI_SSID "Name"
+#define WIFI_PASSWORD "WifiPassword"
 ```
 Also, you should to open your Firebase database to allow the NodeMCU to write and read data. Go to your Firebase project on the Firebase website and access your RealtimeDatabase. Go to the "rules" window and change read and write to true. Will look like this:
 ```c++
@@ -156,7 +156,7 @@ Also, you should to open your Firebase database to allow the NodeMCU to write an
 Nice, now you should be able to use the library properly. The example code is:
 
 ```c++
-/*ARDUINO CODE*/
+/*NodeMCU CODE*/
 #include "SensorDataFirebase-NodeMCU.h"
 
 SensorDataFirebaseNodeMCU sensorData;
