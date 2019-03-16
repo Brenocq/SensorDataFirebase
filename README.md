@@ -68,7 +68,7 @@ The communication between the Arduino and the NodeMCU is made through Serial. Th
 The Node TX can be connected directily on the Arduino RX, but the voltage from the Arduino TX to the Node RX **must** be reduced. I am using one 1k resistor and one 2k2 resistor to lower the signal. 
  
 <p align="center">
-  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection-hq.png" width="700" height="360">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Arduino-Node-connection-hq.png" width="677" height="456">
 </p>
 
 Do not forget to use some clock device.
@@ -85,7 +85,7 @@ After creating the object from the class SensorDataFirebaseArduino there are 3 m
 
 
 ```c++
-/*ARDUINO CODE*/
+/*Arduino CODE*/
 #include "SensorDataFirebase-Arduino.h"
 #include "Clock.h" // Use some library for your RTC clock device
 
