@@ -76,11 +76,13 @@ Do not forget to use some clock device.
 ### Arduino <-> Raspberry
 The communication between the Arduino and the Raspberry is made through Serial too. This communication occurs by default using 9600 of baudrate, Serial1 for the Arduino and ttyAMA0 for the Raspberry. These values can be changed in the *.cpp* file for the Arduino and in the *SensorFirebasePi.py* for the Raspberry.
 
+The connections between the Arduino and the Raspberry is very similar to the connection between the Arduino and the NodeMCU. The voltage divider (two resistors) is still required.
+
 # Using the Arduino library
 Copy the _SensorDataFirebase-Arduino_ folder to your _Documents/Arduino/Library_ folder.<br/>
 After creating the object from the class SensorDataFirebaseArduino there are 3 main commands.<br/>
-`addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.<br/>
-`updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.<br/>
+`addSensor(String name)` -  This command is used to each sensors, the exactly same name must be used on the other commands.<br/><br/>
+`updateValue(String name, float value)` - This command is used to update each sensor data. A maximum of 30 numbers can be sent for the library on a period of 30 minutes.<br/><br/>
 `run(int hour, int minute, int second, int day, int month, int year)` - This command should be runned each minute. Data about the time will be sent to the other device each time and sensors data will be sent every 30 minutes.
 
 
@@ -125,9 +127,9 @@ To change the Serial port that will communicate with the other device go to _Sen
 ```
 
 # Using the NodeMCU library
-Copy the _SensorDataFirebase-NodeMCU folder to your _Documents/Arduino/Library_ folder.
+Copy the _SensorDataFirebase-NodeMCU_ folder to your _Documents/Arduino/Library_ folder.
 After creating the object from the class SensorDataFirebaseNodeMCU there are 2 main commands.<br/>
-`addSensor(String name, String address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/>
+`addSensor(String name, String address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/><br/>
 `run()` - This command can be runned as much as you can. Every time this runs the data on the Serial port is checked and sent to the Firebase RealTimeDatabase.<br/>
 
 To change the Serial port that will communicate with the other device go to _SensorDataFirebase-NodeMCU.cpp_ and change the lines 14 and 15.
@@ -173,5 +175,71 @@ void loop() {
 ```
 
 # Using the Raspberry library
+Paste the folder _SensorDataFirebase-Raspberry_ in your raspberry directory and create a python file inside this folder to code using this library (you can also access this library from another location). Follow the example.py to make your only code. The functions available for use on the Raspberry Library are:</br>
+`addSensor(name, address)` -  This command is used to each sensors. The sequence you add the sensors must be the same on both files. Set the address as the address file in your Firebase where you want the data about this sensor to be stored.<br/><br/>
+`run()` - This command can be runned as much as you can. Every time this runs the data on the Serial port is checked and sent to the Firebase RealTimeDatabase.<br/><br/>
+`sensorInfo(name)` - This command is used to check the information about some sensor already added. this information is printed on the terminal.<br/>
+
+```python
+/*Raspberry CODE*/
+from firebase import firebase
+from Libraries.SensorFirebasePi import SensorFirebasePi
+import time
+
+sensorData = SensorFirebasePi('https:/your-link.firebaseio.com/')
+
+sensorData.addSensor('temperature','Sensors/Temperature/')
+sensorData.addSensor('humidity','Sensors/Humidity/')
+sensorData.sensorInfo('temperature')//It is not necessary
+sensorData.sensorInfo('humidity')//It is not necessary
+
+while True:
+	sensorData.run()
+	time.sleep(1)
+```
+
+# See the library working
+This library was made to show everything it is doing to the user. Everytime the library read and send bytes it will be shown on the Monitor or Terminal. In addition, every time the library makes any changes to the firebase database, those changes will be displayed (read, write, remove).
+
+<p align="center">
+  <img src="https://github.com/Brenocq/SensorDataFirebase/blob/master/Images/Library-Printing.PNG">
+</p>
+
+### Sending Bytes
+
+### Receiving Bytes
+There are two types of data to be received. Data about sensors and data about the time.<br/><br/>
+When receiving data about a sensor, this is shown:<br/>
+Receiving(_sensor name_) - bytes: _b1_ _b2_ _b3_ _b4_ - value: _float value_<br/>
+'Receiving(temperature) - bytes: 16 17 227 65 - value: 28.383331'<br/><br/>
+
+When receiving data about time, this is shown:<br/>
+Receiving(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
+'Receiving(time) - data: 22:1:0 (DoW:5) 15/3/2019'
+
+### Setting Firebase value
+When adding or changing some value on Firebase, this is shown:<br/>
+SET firebase: _address_ = _value_<br/>
+'SET firebase: Time/CurrentTime = 22:04:00'<br/>
+'SET firebase: Sensors/Temperature/Today/00h00 = 28.383331'
+
+### Reading Firebase value
+When reading some value on Firebase, this is shown:<br/>
+GET firebase: _address_:  _value_<br/>
+'GET firebase: Sensors/Temperature/Today/00h00: 28.383331'
+### Deleting Firebase folder
+When deleting some value on Firebase, this is shown:<br/>
+DELETE firebase: _address_<br/>
+'DELETE firebase: Sensors/Temperature/Yesterday/'
+### Cycle indicator
+The library indicates the actual cycle (period of 30 minutes).<br/>
+'#--------------- CYCLE 21h30 ---------------#'<br/>
+Also, it indicates the start and end of some change. For example, if the library is changing information about the sensor _temperature_, it prints that this is ocurring.<br/>
+'#----- Sensor temperature -----#'<br/>
+'#TODAY#'<br/>
+(The changes that are being made appear here)
+'#END#'<br/>
+
+
 
 Any doubt, error, or sugestion, please let me know.
