@@ -11,7 +11,7 @@
 #include <time.h>
 
 //Setting Serial port to send data
-#define SerialToSend Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
+#define SerialToRead Serial1 //To use (TX0 define as Serial) (TX1 define as Serial1) (TX2 define as Serial2) (TX3 define as Serial3)
 #define isSerial0    false	//if TX0/Serial set as true. Otherwise set as false
 
 //edit info below
@@ -19,8 +19,6 @@
 #define FIREBASE_AUTH "authCode"
 #define WIFI_SSID "Name"
 #define WIFI_PASSWORD "WifiPassword"
-
-#define PRINTALL false
 
 SensorDataFirebaseNodeMCU::SensorDataFirebaseNodeMCU()
 {
@@ -43,17 +41,24 @@ SensorDataFirebaseNodeMCU::SensorDataFirebaseNodeMCU()
 
 void SensorDataFirebaseNodeMCU::begin(){
 	// connect to wifi.
-	Serial.begin(57600);
+	SerialToRead.begin(9600);
 
 	WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-	Serial.print("connecting");
+
+	if (!isSerial0)//If is not using Serial0(TX0) to send bytes
+		Serial0.print("connecting");
+
 	while (WiFi.status() != WL_CONNECTED) {
-		Serial.print(".");
+		if (!isSerial0)//If is not using Serial0(TX0) to send bytes
+			Serial.print(".");
 		delay(500);
 	}
-	Serial.println();
-	Serial.print("connected: ");
-	Serial.println(WiFi.localIP());
+	if (!isSerial0){
+		Serial.println();
+		Serial.print("connected: ");
+		Serial.println(WiFi.localIP());
+	}
+
 
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 }
@@ -69,31 +74,32 @@ void SensorDataFirebaseNodeMCU::addSensor(String name, String address){
 }
 
 void SensorDataFirebaseNodeMCU::run(){
-	if (PRINTALL)
+	if (!isSerial0){
 		Serial.println("//--------------------------- RUN RECEIVE ---------------------------//");
+	}
 	if (Serial.available() >= 1) {//Is there data on the serial port?
-		int byte1 = Serial.read();
+		int byte1 = SerialToRead.read();
 		if (byte1==254){//first byte equal 254
-			int byte2 = Serial.read();
+			int byte2 = SerialToRead.read();
 			if (byte2 == 253){//second byte equal 253
 				//read bytes
-				int	code1 = Serial.read();
-				int	code2 = Serial.read();
+				int	code1 = SerialToRead.read();
+				int	code2 = SerialToRead.read();
 
 				if (code1 == code2){//check codes
 					//---------- TIME ----------//
 					if (code1 == 0){
 						int _hour, _minute, _second, _dayOfWeek, _day, _month, _year;
 						//receive bytes
-						_hour = Serial.read();
-						_minute = Serial.read();
-						_second = Serial.read();
-						_dayOfWeek = Serial.read();
-						_day = Serial.read();
-						_month = Serial.read();
-						_year = Serial.read() + 2018;
+						_hour = SerialToRead.read();
+						_minute = SerialToRead.read();
+						_second = SerialToRead.read();
+						_dayOfWeek = SerialToRead.read();
+						_day = SerialToRead.read();
+						_month = SerialToRead.read();
+						_year = SerialToRead.read() + 2018;
 
-						int	confirmation = Serial.read();//sum of all numbers (I will assume that its OK now)(need to change later)(talk with Breno Queiroz)
+						int	confirmation = SerialToRead.read();//sum of all numbers (I will assume that its OK now)(need to change later)(talk with Breno Queiroz)
 
 						//!!!!NO PROTECTION!!!!
 						hour = _hour;
@@ -130,7 +136,7 @@ void SensorDataFirebaseNodeMCU::run(){
 						String secondString = second < 10 ? "0" + String(second) : String(second);
 
 						String currentTime = hourString + ":" + minuteString + ":" + secondString;
-						if (PRINTALL){
+						if (!isSerial0){
 							Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(currentTime);
 						}
 						//set value firebase
@@ -143,7 +149,7 @@ void SensorDataFirebaseNodeMCU::run(){
 						String monthString = month < 10 ? "0" + String(month) : String(month);
 
 						String currentDate = dayString + "/" + monthString + "/" + String(year);
-						if (PRINTALL){
+						if (!isSerial0){
 							Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(currentDate);
 						}
 						//set value firebase
@@ -161,11 +167,11 @@ void SensorDataFirebaseNodeMCU::run(){
 						} u;
 
 						//receive bytes
-						u.b[0] = Serial.read();
-						u.b[1] = Serial.read();
-						u.b[2] = Serial.read();
-						u.b[3] = Serial.read();
-						int	confirmation = Serial.read();//sum of all numbers
+						u.b[0] = SerialToRead.read();
+						u.b[1] = SerialToRead.read();
+						u.b[2] = SerialToRead.read();
+						u.b[3] = SerialToRead.read();
+						int	confirmation = SerialToRead.read();//sum of all numbers
 
 						//set the sumReceived byte
 						int sumReceived = code1 + u.b[0] + u.b[1] + u.b[2] + u.b[3];
@@ -173,8 +179,10 @@ void SensorDataFirebaseNodeMCU::run(){
 
 						//------ Values OK? ------//
 						if (sumReceived == confirmation && code1 == code2){//only continues if there is no corrupted byte
+							if (!isSerial0){
 							Serial.print("//----------SENSOR "); Serial.print(names[code1 - 1]); Serial.println("----------//");
 							Serial.print("Value received:"); Serial.println(u.fval);
+						}
 
 							int index = code1 - 1;//set the sensor index (sensor 1 -> index 0)
 							float value = u.fval;
@@ -204,7 +212,9 @@ void SensorDataFirebaseNodeMCU::run(){
 //**********************************************************************************************************************TODAY
 //**********************************************************************************************************************TODAY
 void SensorDataFirebaseNodeMCU::updateFirebaseToday(int index, float value ){
-	Serial.println("//-----TODAY-----//");
+	if (!isSerial0){
+		Serial.println("//-----TODAY-----//");
+	}
 	int indexHour = (hour * 2) + (minute / 30);
 
 	//each index refer to one hour
@@ -216,23 +226,29 @@ void SensorDataFirebaseNodeMCU::updateFirebaseToday(int index, float value ){
 	//create complete address to firebase
 	String dataBaseAddress = addresses[index] + "Today/" + hours[indexHour];
 	//print address screen
-	Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(value);
+	if (!isSerial0){
+		Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(value);
+	}
 	//set value firebase
 	Firebase.setFloat(dataBaseAddress, value);
 
 	//check possible errors and try
 	if (Firebase.failed()) {
+		if (!isSerial0){
 		Serial.print("		Failed to set value");
+	}
 		delay(100);
 		Firebase.setFloat(dataBaseAddress, value);
-
+		if (!isSerial0){
 		Serial.println("");
+		}
 	}
 }
 //**********************************************************************************************************************YESTERDAY
 //**********************************************************************************************************************YESTERDAY
 void SensorDataFirebaseNodeMCU::updateFirebaseYesterday(int index){
-Serial.println("//-----YESTERDAY-----//");
+	if (!isSerial0)
+		Serial.println("//-----YESTERDAY-----//");
 	//----- get values Today -----//
 	//each index refer to one hour
 	String hours[48] = { "00h00", "00h30", "01h00", "01h30", "02h00", "02h30", "03h00", "03h30", "04h00", "04h30",
@@ -246,7 +262,9 @@ Serial.println("//-----YESTERDAY-----//");
 		valuesToday[index][i] = -1;//@TODO delete this line
 		valuesToday[index][i] = Firebase.getFloat(addresses[index] + "Today/" + hours[i]);
 		//print address screen
+		if (!isSerial0){
 		Serial.print("GET:"); Serial.print(addresses[index] + "Today/" + hours[i]); Serial.print(" : "); Serial.println(valuesToday[index][i]);
+		}
 	}
 	//----- print values valuesToday -----//
 	/*Serial.println("Print (valuesToday[index][i]):	");
@@ -262,7 +280,9 @@ Serial.println("//-----YESTERDAY-----//");
 	}*/
 
 	//----- update values Yesterday -----//
+	if (!isSerial0){
 	Serial.print("DELETE:"); Serial.println(addresses[index] + "Yesterday");
+	}
 	//remove value firebase
 	Firebase.remove(addresses[index] + "Yesterday");
 
@@ -273,16 +293,19 @@ Serial.println("//-----YESTERDAY-----//");
 		if (valuesToday[index][i] != -1 && valuesToday[index][i] != 0){//(ignore all -1 and 0 values)
 			//Month has already updated valuesToday[index][i], so it's ok to use it
 			//print address screen
+			if (!isSerial0){
 			Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(valuesToday[index][i]);
+			}
 			//set value firebase
 			Firebase.setFloat(dataBaseAddress, valuesToday[index][i]);
 			//check possible errors and try
 			if (Firebase.failed()) {
-				Serial.print("		Failed to set value");
+				if (!isSerial0)
+					Serial.print("		Failed to set value");
 				delay(100);
 				Firebase.setFloat(dataBaseAddress, valuesToday[index][i]);
-
-				Serial.println("");
+				if (!isSerial0)
+					Serial.println("");
 			}
 		}
 	}
@@ -293,21 +316,26 @@ Serial.println("//-----YESTERDAY-----//");
 	//create complete address to firebase
 	String dataBaseAddress = addresses[index] + "Today";
 	//print address screen
-	Serial.print("DELETE:"); Serial.println(dataBaseAddress);
+	if (!isSerial0){
+		Serial.print("DELETE:"); Serial.println(dataBaseAddress);
+	}
 	//remove value firebase
 	Firebase.remove(dataBaseAddress);
 }
 //**********************************************************************************************************************MONTH
 //**********************************************************************************************************************MONTH
 void SensorDataFirebaseNodeMCU::updateFirebaseMonth(int index){
-	Serial.println("//-----MONTH-----//");
+		if (!isSerial0)
+			Serial.println("//-----MONTH-----//");
 	//----- delete month if day 1 -----//
 	if (day == 1)
 	{
 		//create complete address to firebase
 		String dataBaseAddress = addresses[index] + "Month";
 		//print address screen
+		if (!isSerial0){
 		Serial.print("DELETE:"); Serial.println(dataBaseAddress);
+		}
 		//remove value firebase
 		Firebase.remove(dataBaseAddress);
 	}
@@ -323,14 +351,17 @@ void SensorDataFirebaseNodeMCU::updateFirebaseMonth(int index){
 		//get all values from Today (files hours[i] inside folder)
 		valuesToday[index][i] = Firebase.getFloat(addresses[index] + "Today/" + hours[i]);
 		//print address screen
+		if (!isSerial0){
 		Serial.print("GET:"); Serial.print(addresses[index] + "Today/" + hours[i]); Serial.print(" : "); Serial.println(valuesToday[index][i]);
+		}
 		//check possible errors and try
 		if (Firebase.failed()) {
+			if (!isSerial0)
 			Serial.print("		Failed to get value");
 			delay(100);
 			Firebase.getFloat(addresses[index] + "Today/" + hours[i]);
-
-			Serial.println("");
+			if (!isSerial0)
+				Serial.println("");
 		}
 	}
 
@@ -348,7 +379,8 @@ void SensorDataFirebaseNodeMCU::updateFirebaseMonth(int index){
 	}*/
 
 	//----- calculate mean Today -----// (ignore all -1 values)
-	Serial.print("Calculating mean... [");
+	if (!isSerial0)
+		Serial.print("Calculating mean... [");
 	float mean = 0;
 	float totalSum = 0;
 	for (int i = 0; i < 48; i++){
@@ -361,36 +393,47 @@ void SensorDataFirebaseNodeMCU::updateFirebaseMonth(int index){
 	for (int i = 0; i < 48; i++){
 		valuesToday[index][i] = -1;
 	}
-	Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum);
+	if (!isSerial0){
+		Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum);
+	}
 	mean /= totalSum;
-	Serial.print(")="); Serial.println(mean);
+	if (!isSerial0){
+		Serial.print(")="); Serial.println(mean);
+	}
 	//----- update mean Month -----//
 	//create complete address to firebase
 	String dataBaseAddress = addresses[index] + "Month/" + day;
 	//print address screen
-	Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	if (!isSerial0){
+		Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	}
 	//set value firebase
 	Firebase.setFloat(dataBaseAddress, mean);
 
 	//check possible errors and try
 	if (Firebase.failed()) {
-		Serial.print("		Failed to set value");
+		if (!isSerial0)
+			Serial.print("		Failed to set value");
 		delay(100);
 		Firebase.setFloat(dataBaseAddress, mean);
-
-		Serial.println("");
+		if (!isSerial0)
+			Serial.println("");
 	}
 	//----- add value vector year -----//
-	Serial.println("//-----MONTH (WEEK)-----//");
+	if (!isSerial0)
+		Serial.println("//-----MONTH (WEEK)-----//");
 	dataBaseAddress = addresses[index] + "Week/" + dayOfWeek;
-	Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	if (!isSerial0){
+		Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	}
 	//set value firebase
 	Firebase.setFloat(dataBaseAddress, mean);
 }
 //**********************************************************************************************************************YEAR
 //**********************************************************************************************************************YEAR
 void SensorDataFirebaseNodeMCU::updateFirebaseYear(int index){
-	Serial.println("//-----YEAR-----//");
+	if (!isSerial0)
+		Serial.println("//-----YEAR-----//");
 	//----- calculate week -----//
 	String weekNumberS;
 
@@ -446,32 +489,44 @@ void SensorDataFirebaseNodeMCU::updateFirebaseYear(int index){
 		//get all values from Today (files hours[i] inside folder)
 		valuesWeek[index] = Firebase.getFloat(addresses[index] + "Week/" + i);
 		//print address screen
+		if (!isSerial0){
 		Serial.print("GET:"); Serial.print(addresses[index] + "Week/" + i); Serial.print(" : "); Serial.println(valuesWeek[index]);
+	}
 		//check possible errors and try
 		if (Firebase.failed()) {
-			Serial.print("		Failed to get value -> ");
+			if (!isSerial0)
+				Serial.print("		Failed to get value -> ");
 			delay(100);
 			valuesWeek[index] = Firebase.getFloat(addresses[index] + "Week/" + i);
+			if (!isSerial0){
 			Serial.print("GETagain:"); Firebase.getFloat(addresses[index] + "Week/" + i); Serial.print(" : "); Serial.println(valuesWeek[index]);
 
 			Serial.println("");
 		}
+		}
 	}
 	//----- calculate mean Week -----// ignore all -1 (default)
-	Serial.print("Calculating mean... [");
+	if (!isSerial0)
+		Serial.print("Calculating mean... [");
 	float mean = 0;
 	float totalSum=0;
 	for (int i = 0; i < 7; i++){
 		if (valuesWeek[i] != -1 && valuesWeek[i] != 0){
 			mean += valuesWeek[i];
 			//print [value(dayOfWeek)+...]			0=sunday
+			if (!isSerial0){
 			Serial.print(valuesWeek[i]); Serial.print("("); Serial.print(i); Serial.print(")"); Serial.print("+");
+		}
 			totalSum++;
 		}
 	}
-	Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum);
+	if (!isSerial0){
+		Serial.print("] --> ("); Serial.print(mean); Serial.print("/"); Serial.print(totalSum);
+	}
 	mean /= totalSum;
-	Serial.print(")="); Serial.println(mean);
+	if (!isSerial0){
+		Serial.print(")="); Serial.println(mean);
+	}
 	//reset valuesMonth[index][i]
 	for (int i = 0; i < 7; i++){
 		valuesWeek[i] = -1;
@@ -482,24 +537,29 @@ void SensorDataFirebaseNodeMCU::updateFirebaseYear(int index){
 	//create complete address to firebase
 	String dataBaseAddress = addresses[index] + "Years/" + yearCode;
 	//print address screen
-	Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	if (!isSerial0){
+		Serial.print("SET:"); Serial.print(dataBaseAddress); Serial.print(" = "); Serial.println(mean);
+	}
 	//set value firebase
 	Firebase.setFloat(dataBaseAddress, mean);
 
 	//check possible errors and try
 	if (Firebase.failed()) {
-		Serial.print("		Failed to set value");
+		if (!isSerial0)
+			Serial.print("		Failed to set value");
 		delay(100);
 		Firebase.setFloat(dataBaseAddress, mean);
-
-		Serial.println("");
+		if (!isSerial0)
+			Serial.println("");
 	}
 
 	//----- delete values Week -----//
 	//create complete address to firebase
 	dataBaseAddress = addresses[index] + "Week";
 	//print address screen
-	Serial.print("DELETE:"); Serial.println(dataBaseAddress);
+	if (!isSerial0){
+		Serial.print("DELETE:"); Serial.println(dataBaseAddress);
+	}
 	//remove value firebase
 	Firebase.remove(dataBaseAddress);
 }
