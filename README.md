@@ -209,7 +209,7 @@ This library was made to show everything it is doing to the user. Everytime the 
 There are two types of data to send. Data about sensors and data about the time.<br/><br/>
 When sending data about a sensor, this is shown:<br/>
 Sending(_sensor name_) - bytes: _b1_ _b2_ _b3_ _b4_ - value: _float value_<br/>
-`Sending(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/><br/>
+`Sending(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/>
 
 When sending data about time, this is shown:<br/>
 Sending(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
@@ -219,7 +219,7 @@ Sending(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
 There are two types of data to be received. Data about sensors and data about the time.<br/><br/>
 When receiving data about a sensor, this is shown:<br/>
 Receiving(_sensor name_) - bytes: _b1_ _b2_ _b3_ _b4_ - value: _float value_<br/>
-`Receiving(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/><br/>
+`Receiving(temperature) - bytes: 16 17 227 65 - value: 28.383331`<br/>
 
 When receiving data about time, this is shown:<br/>
 Receiving(time) - data: _HH_:_MM_:_SS_ (DoW:_Day of week_) _DD_/_MM_/_YYYY_<br/>
@@ -250,7 +250,7 @@ The library indicates the actual cycle (period of 30 minutes).<br/>
 Also, it indicates the start and end of some change. For example, if the library is changing information about the sensor _temperature_, it prints that this is ocurring.<br/>
 `#----- Sensor temperature -----#`<br/>
 `#TODAY#`<br/>
-(The changes that are being made appear here)
+(The changes that are being made appear here)<br/>
 `#END#`<br/>
 
 Any doubt, error, or sugestion, please let me know.
