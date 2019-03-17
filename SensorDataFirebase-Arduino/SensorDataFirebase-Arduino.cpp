@@ -69,14 +69,14 @@ void SensorDataFirebaseArduino::updateValue(String name, float value){
 
 }
 
-void SensorDataFirebaseArduino::run(int hour, int minute, int second, int dayOfWeek, int day, int month, int year){
+void SensorDataFirebaseArduino::run(int hour, int minute, int second, int day, int month, int year){
 	//---------- Send bytes when necessary to the other decive ----------//
 	//Bytes about the time are sent to the other device
 
 	int actualCycle = (minute + hour * 60) / 30;//Calculate the actual cycle
 
 	//Send Hour
-	sendHour(hour, minute, second, dayOfWeek, day, month, year);
+	sendHour(hour, minute, second, 0, day, month, year);
 
 
 	//Check cycle and executes if is a new cycle (each cycle has 30 minutes)(each cycle run just once)
