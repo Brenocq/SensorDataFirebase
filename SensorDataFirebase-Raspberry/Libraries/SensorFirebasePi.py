@@ -243,21 +243,23 @@ class SensorFirebasePi:
         #----- calculate mean Today -----# (ignore all -1 values)
         meanData = .0
         totalSum = .0
-        for i in range(48):
-            if(valuesToday[i] != None):
-                meanData += valuesToday[i]
+        for val in valuesToday:
+            if(val != None):
+                meanData += val
                 totalSum += 1
 
         #----- update mean Month -----#
         #create complete address to firebase
-        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/" + self.day
-        if(valuesToday[i] != None):
-            print("SET firebase: %s = %f" % (dataBaseAddressMonth,meanData))
-            self.firebase.put(dataBaseAddressMonth, None, meanData)
+        meanData /= totalSum
+
+        dataBaseAddressMonth = self.sensors[name]['address'] + "Month/"
+
+        print("SET firebase: %s = %f" % (dataBaseAddressMonth,meanData))
+        self.firebase.put(dataBaseAddressMonth, str(self.day), meanData)
 
         #----- update mean dayOfWeek -----#
         print('#MONTH (WEEK)#')
-        dataBaseAddressWeek = self.sensors[name]['address'] + "Week/" + self.dayOfWeek
+        dataBaseAddressWeek = self.sensors[name]['address'] + "Week/" + str(self.dayOfWeek)
         if(meanData != 0):
             print("SET firebase: %s = %f" % (dataBaseAddressWeek,meanData))
             self.firebase.put(dataBaseAddressWeek, None, meanData)
