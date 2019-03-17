@@ -348,11 +348,11 @@ class SensorFirebasePi:
     	#EX: 2019-month1-week2
     	yearCode = str(self.year) + "-month" + str(self.month) + "-week" + str(self.weekNumberS)
     	#create complete address to firebase
-    	dataBaseAddress = self.sensors[name]['address'] + "Years/" + yearCode
+    	dataBaseAddress = self.sensors[name]['address'] + "Years/"
     	#print address screen
-        print("SET firebase: %s = %f" % (dataBaseAddress, meanData))
+        print("SET firebase: %s = %f" % (dataBaseAddress + yearCode, meanData))
         #set value firebase
-        self.firebase.put(dataBaseAddress,None, meanData)
+        self.firebase.put(dataBaseAddress,yearCode, meanData)
 
     	#----- delete values Week -----#
     	#create complete address to firebase
